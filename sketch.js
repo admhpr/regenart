@@ -17,25 +17,30 @@ const sketch = () => {
       for (let y = 0; y < count; y++) {
         const u = createUV(x, count);
         const v = createUV(y, count);
-        points.push([u, v]);
+        points.push({ radius: random.value(), position: [u, v] });
       }
     }
     return points;
   }
 
   random.setSeed(116);
-  const points = createGrid(40).filter(() => random.value() > 0.5);
+  const points = createGrid(300).filter(() => random.value() > 0.5);
   const margin = 100;
   // render function
   return ({ context, width, height }) => {
     context.fillStyle = "white";
 
-    points.forEach(([u, v]) => {
+    points.forEach(data => {
+      const {
+        position: [u, v],
+        radius
+      } = data;
+
       const x = lerp(margin, width - margin, u);
       const y = lerp(margin, height - margin, v);
 
       context.beginPath();
-      context.arc(x, y, 5, 0, Math.PI * 2, false);
+      context.arc(x, y, radius, 0, Math.PI * 2, false);
       context.storkeStyle = "black";
       context.lineWidth = 5;
       context.stroke();
