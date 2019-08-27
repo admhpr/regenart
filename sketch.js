@@ -1,5 +1,6 @@
 const canvasSketch = require("canvas-sketch");
 const { lerp } = require("canvas-sketch-util/math");
+const random = require("canvas-sketch-util/random");
 
 const settings = {
   dimensions: "A4",
@@ -10,9 +11,8 @@ const sketch = () => {
   function createUV(coord, count) {
     return count <= 1 ? 0.5 : coord / (count - 1);
   }
-  function createGrid() {
+  function createGrid(count = 5) {
     const points = [];
-    const count = 5;
     for (let x = 0; x < count; x++) {
       for (let y = 0; y < count; y++) {
         const u = createUV(x, count);
@@ -22,7 +22,9 @@ const sketch = () => {
     }
     return points;
   }
-  const points = createGrid();
+
+  random.setSeed(116);
+  const points = createGrid(40).filter(() => random.value() > 0.5);
   const margin = 100;
   // render function
   return ({ context, width, height }) => {
@@ -33,9 +35,9 @@ const sketch = () => {
       const y = lerp(margin, height - margin, v);
 
       context.beginPath();
-      context.arc(x, y, 100, 0, Math.PI * 2, false);
+      context.arc(x, y, 5, 0, Math.PI * 2, false);
       context.storkeStyle = "black";
-      context.lineWidth = 40;
+      context.lineWidth = 5;
       context.stroke();
     });
   };
