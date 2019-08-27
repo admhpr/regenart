@@ -17,7 +17,10 @@ const sketch = () => {
       for (let y = 0; y < count; y++) {
         const u = createUV(x, count);
         const v = createUV(y, count);
-        points.push({ radius: random.value() * 0.05, position: [u, v] });
+        points.push({
+          radius: Math.abs(random.gaussian() * 0.01),
+          position: [u, v]
+        });
       }
     }
     return points;
@@ -43,7 +46,8 @@ const sketch = () => {
       context.arc(x, y, radius * width, 0, Math.PI * 2, false);
       context.storkeStyle = "black";
       context.lineWidth = 5;
-      context.stroke();
+      context.fillStyle = "red";
+      context.fill();
     });
   };
 };
