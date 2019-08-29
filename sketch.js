@@ -9,7 +9,8 @@ const settings = {
 };
 
 const sketch = () => {
-  const palette = random.pick(palettes);
+  const colorCount = random.rangeFloor(1, 6);
+  const palette = random.shuffle(random.pick(palettes).slice(0, colorCount));
   function createUV(coord, count) {
     return count <= 1 ? 0.5 : coord / (count - 1);
   }
