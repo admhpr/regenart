@@ -20,9 +20,11 @@ const sketch = () => {
       for (let y = 0; y < count; y++) {
         const u = createUV(x, count);
         const v = createUV(y, count);
+        const radius = Math.abs(random.noise2D(u, v) * 0.2);
         points.push({
           color: random.pick(palette),
-          radius: Math.abs(random.gaussian() * 0.01),
+          radius,
+          rotation: random.noise2D(u, v),
           position: [u, v]
         });
       }
@@ -30,7 +32,7 @@ const sketch = () => {
     return points;
   }
 
-  random.setSeed(116);
+  // random.setSeed();
   const points = createGrid(50).filter(() => random.value() > 0.5);
   const margin = 100;
   // render function
@@ -42,18 +44,26 @@ const sketch = () => {
       const {
         position: [u, v],
         radius,
+        rotation,
         color
       } = data;
 
       const x = lerp(margin, width - margin, u);
       const y = lerp(margin, height - margin, v);
 
-      context.beginPath();
-      context.arc(x, y, radius * width, 0, Math.PI * 2, false);
-      context.storkeStyle = color;
-      context.lineWidth = 5;
+      // context.beginPath();
+      // context.arc(x, y, radius * width, 0, Math.PI * 2, false);
+      // context.storkeStyle = color;
+      // context.lineWidth = 5;
+      // context.fillStyle = color;
+      // context.fill();
+      context.save();
       context.fillStyle = color;
-      context.fill();
+      context.font = `${radius * width}px "Arial"`;
+      context.translate(x, y);
+      context.rotate(rotation);
+      context.fillText(`@`, 0, 0);
+      context.restore();
     });
   };
 };
