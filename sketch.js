@@ -8,6 +8,8 @@ const settings = {
   pixelsPerInch: 300
 };
 
+random.setSeed(random.getRandomSeed());
+console.log(random.getSeed());
 const sketch = () => {
   const colorCount = random.rangeFloor(1, 6);
   const palette = random.shuffle(random.pick(palettes).slice(0, colorCount));
@@ -32,7 +34,6 @@ const sketch = () => {
     return points;
   }
 
-  // random.setSeed();
   const points = createGrid(50).filter(() => random.value() > 0.5);
   const margin = 100;
   // render function
@@ -62,7 +63,7 @@ const sketch = () => {
       context.font = `${radius * width}px "Arial"`;
       context.translate(x, y);
       context.rotate(rotation);
-      context.fillText(`@`, 0, 0);
+      context.fillText(`❃`, 0, 0);
       context.restore();
     });
   };
