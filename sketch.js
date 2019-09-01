@@ -55,7 +55,7 @@ const sketch = () => {
 
       // context.beginPath();
       // context.arc(x, y, radius * width, 0, Math.PI * 2, false);
-      // context.storkeStyle = color;
+      // context.strokeStyle = color;
       // context.lineWidth = 5;
       // context.fillStyle = color;
       // context.fill();
