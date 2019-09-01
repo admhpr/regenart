@@ -1,56 +1,104 @@
 const canvasSketch = require("canvas-sketch");
 const random = require("canvas-sketch-util/random");
-const palettes = require("nice-color-palettes");
 const { lerp } = require("canvas-sketch-util/math");
+const palettes = require("nice-color-palettes/1000.json");
 
-const colorCount = random.rangeFloor(1, 6);
-const palette = random.shuffle(random.pick(palettes).slice(0, colorCount));
-console.log(palette);
 const settings = {
-  suffix: `pallete-${palette}`,
-  dimensions: "A4",
-  pixelsPerInch: 300
+  dimensions: [2048, 1024]
 };
 
-function createUV(coord, count) {
-  return count <= 1 ? 0.5 : coord / (count - 1);
-}
+const sketch = ({ width, height }) => {
+  // Let's get a random palette of 1-5 colours
+  const nColors = random.rangeFloor(1, 6);
+  const palette = random.shuffle(random.pick(palettes)).slice(0, nColors);
+  const background = "white";
 
-const sketch = () => {
-  function createGrid(count = 5) {
+  // Padding around edges
+  const margin = width * 0.05;
+
+  // Create a grid of points (in pixel space) within the margin bounds
+  const createGrid = () => {
+    const xCount = 6;
+    const yCount = 6;
     const points = [];
-    for (let x = 0; x < count; x++) {
-      for (let y = 0; y < count; y++) {
-        const color = random.pick(palette);
-        const u = createUV(x, count);
-        const v = createUV(y, count);
-        points.push({
-          color,
-          position: [u, v]
-        });
+    for (let x = 0; x < xCount; x++) {
+      for (let y = 0; y < yCount; y++) {
+        const u = x / (xCount - 1);
+        const v = y / (yCount - 1);
+        const px = lerp(margin, width - margin, u);
+        const py = lerp(margin, height - margin, v);
+        points.push([px, py]);
       }
     }
     return points;
+  };
+
+  // Create the grid
+  let grid = createGrid();
+
+  // Now create the shapes
+  let shapes = [];
+
+  // As long as we still have two grid points left
+  while (grid.length > 2) {
+    // Select two random points from the grid
+    const pointsToRemove = random.shuffle(grid).slice(0, 2);
+    // Not enough points left, just break out
+    if (pointsToRemove.length < 2) {
+      break;
+    }
+
+    // The color of this trapezoid
+    const color = random.pick(palette);
+
+    // Filter these points out of the grid
+    grid = grid.filter(p => !pointsToRemove.includes(p));
+
+    // Now let's form the trapezoid from points A to B
+    const [a, b] = pointsToRemove;
+
+    shapes.push({
+      color,
+      // The path goes from the bottom of the page,
+      // up to the first point,
+      // through the second point,
+      // and then back down to the bottom of the page
+      path: [[a[0], height - margin], a, b, [b[0], height - margin]],
+      // The average Y position of both grid points
+      // This will be used for layering
+      y: (a[1] + b[1]) / 2
+    });
   }
 
-  const points = createGrid(5);
-  const margin = 100;
-  // render functionrandom.pick(palette)
+  // Sort/layer the shapes according to their average Y position
+  shapes.sort((a, b) => a.y - b.y);
+
+  // Now render
   return ({ context, width, height }) => {
-    points.forEach(data => {
-      const {
-        position: [u, v],
-        color
-      } = data;
+    // Make sure our alpha is back to 1.0 before
+    // we draw our background color
+    context.globalAlpha = 1;
+    context.fillStyle = background;
+    context.fillRect(0, 0, width, height);
 
-      const x = lerp(margin, width - margin, u);
-      const y = lerp(margin, height - margin, v);
-
+    shapes.forEach(({ lineWidth, path, color }) => {
       context.beginPath();
-      context.strokeStyle = color;
-      context.lineWidth = 40;
-      context.stroke();
+      path.forEach(([x, y]) => {
+        context.lineTo(x, y);
+      });
       context.closePath();
+
+      // Draw the trapezoid with a specific colour
+      context.lineWidth = 20;
+      context.globalAlpha = 0.85;
+      context.fillStyle = color;
+      context.fill();
+
+      // Outline at full opacity
+      context.lineJoin = context.lineCap = "round";
+      context.strokeStyle = background;
+      context.globalAlpha = 1;
+      context.stroke();
     });
   };
 };
